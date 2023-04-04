@@ -1,12 +1,17 @@
-import sys
 import os
-
+import argparse
 import pandas as pd
 
-# get args from cmd (exclude the first one which is the script name)
-[filepath, output_dir, *projects] = sys.argv[1:]
+parser = argparse.ArgumentParser(
+    description='Process CSV data by project and month')
+parser.add_argument('filepath', type=str, help='path to the CSV file')
+parser.add_argument('projects', type=str, nargs='+',
+                    help='list of projects to process')
+parser.add_argument('-o', '--output', type=str,
+                    default='.', help='output directory')
+args = parser.parse_args()
 
-df = pd.read_csv(filepath)
+df = pd.read_csv(args.filepath)
 
 # remove unused columns
 df = df.drop(columns=["From", "To", "Price", "rate_internal", "User", "Name", "Description", "Exported",
@@ -20,7 +25,7 @@ all_dates = pd.date_range(start=df['Date'].min(), end=df['Date'].max())
 
 # create a list of dataframes, one for each project
 project_dfs = []
-for project in projects:
+for project in args.projects:
     project_df = df[df['Project'] == project]
     daily_project_hours = project_df.groupby(['Date'])['Duration'].sum() / 3600
     # merge with the all_dates DataFrame and fill missing values with 0
@@ -31,7 +36,7 @@ for project in projects:
 
 # merge the dataframes on date
 daily_merged = pd.concat(project_dfs, axis=1)
-daily_merged.columns = [f"{project} Hours" for project in projects]
+daily_merged.columns = [f"{project} Hours" for project in args.projects]
 
 
 # add a column for the non-project working hours
@@ -49,21 +54,22 @@ daily_merged = daily_merged.fillna(0)
 for month, data in daily_merged.groupby(pd.Grouper(freq='M')):
     # create a directory with the name of the month
     directory_name = month.strftime('%b-%Y')
-    os.makedirs(os.path.join(output_dir, directory_name), exist_ok=True)
+    os.makedirs(os.path.join(args.output, directory_name), exist_ok=True)
 
     # loop through each project and create a separate CSV file
-    for project in projects:
+    for project in args.projects:
         # select only the data for the current project
         project_data = data[[f"{project} Hours", "Other Hours", "Total Hours"]]
 
         # calculate the other hours for the current project
         other_hours = project_data["Other Hours"] + \
-            data[[f"{p} Hours" for p in projects if p != project]].sum(axis=1)
+            data[[f"{p} Hours" for p in args.projects if p != project]].sum(
+                axis=1)
 
         # add the other hours to the project data
         project_data["Other Hours"] = other_hours
 
         # create a CSV file with the name of the project and month
         filename = os.path.join(
-            output_dir, directory_name, f"{project} - {month.strftime('%b-%Y')}.csv")
+            args.output, directory_name, f"{project} - {month.strftime('%b-%Y')}.csv")
         project_data.to_csv(filename, index=True, header=True)
