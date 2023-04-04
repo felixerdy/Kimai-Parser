@@ -72,4 +72,5 @@ for month, data in daily_merged.groupby(pd.Grouper(freq='M')):
         # create a CSV file with the name of the project and month
         filename = os.path.join(
             args.output, directory_name, f"{project} - {month.strftime('%b-%Y')}.csv")
-        project_data.to_csv(filename, index=True, header=True)
+        project_data.to_csv(filename, index=True,
+                            header=True, decimal=",", sep=";")
