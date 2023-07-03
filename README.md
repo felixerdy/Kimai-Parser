@@ -6,7 +6,7 @@ This project requires Python 3.7 or higher. Clone the repository and install the
 
 ### Usage
 ```
-usage: generate_csv.py [-h] [--output-dir OUTPUT_DIR] filepath project [project ...]
+usage: index.py [-h] [--output OUTPUT_DIR] filepath project [project ...]
 
 positional arguments:
   filepath              path to the time tracking CSV file
@@ -14,12 +14,12 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --output-dir OUTPUT_DIR
+  --output OUTPUT_DIR
                         path to the directory where the output CSV files will be saved (default: current directory)
 ```
 
 ### Example usage:
 ```
-python generate_csv.py time_tracking.csv ProjectA ProjectB --output-dir output_files
+python index.py time_tracking.csv ProjectA ProjectB --output output_files
 ```
 This will generate monthly CSV files for "ProjectA" and "ProjectB" in the "output_files" directory.

@@ -74,3 +74,6 @@ for month, data in daily_merged.groupby(pd.Grouper(freq='M')):
             args.output, directory_name, f"{project} - {month.strftime('%b-%Y')}.csv")
         project_data.to_csv(filename, index=True,
                             header=True, decimal=",", sep=";")
+        filename = os.path.join(
+            args.output, directory_name, f"{project} - {month.strftime('%b-%Y')}.xlsx")
+        project_data.T.to_excel(filename)
